@@ -1,0 +1,37 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix testgo
+gazelle(name = "gazelle")
+
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=go.mod",
+        "-to_macro=deps.bzl%go_dependencies",
+        "-prune",
+    ],
+    command = "update-repos",
+)
+
+go_library(
+    name = "testgo_lib",
+    srcs = [
+        "main.go",
+        "mod.go",
+    ],
+    importpath = "testgo",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_samber_lo//:lo",
+        "@com_github_sirupsen_logrus//:logrus",
+        "@org_golang_x_mod//modfile",
+    ],
+)
+
+go_binary(
+    name = "testgo",
+    embed = [":testgo_lib"],
+    visibility = ["//visibility:public"],
+    # x_defs = {"Version": "0.9"},
+)
